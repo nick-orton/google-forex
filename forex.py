@@ -1,9 +1,6 @@
 #!/usr/bin/python
-import warnings
-import urllib
-import html5lib
+import warnings,urllib,html5lib,sys
 from html5lib.treebuilders import dom
-import sys
 from enum import Enum
 
 CURRENCIES = Enum(
