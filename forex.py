@@ -1,13 +1,18 @@
 import urllib
 import html5lib
 from html5lib.treebuilders import dom
+import sys
 
-currency1 = "AED"
-currency2 = "ARS"
+if (len(sys.argv) != 3): 
+    print "usage: python forex.py USD CNY"
+    quit()
+
+currency1 = sys.argv[1] 
+currency2 = sys.argv[2]
+
 url = "http://www.google.com/finance/converter?a=1&from=" + currency1 + "&to=" + currency2
-print url
+
 response = urllib.urlopen(url)
-headers = response.info()
 data = response.read()
 
 # Create an HTML parser which creates DOMs.
