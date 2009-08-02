@@ -4,6 +4,75 @@ import urllib
 import html5lib
 from html5lib.treebuilders import dom
 import sys
+from enum import Enum
+
+CURRENCIES = Enum(
+"AED",
+"ANG",
+"ARS",
+"AUD",
+"BGN",
+"BHD",
+"BND",
+"BOB",
+"BRL",
+"BWP",
+"CAD",
+"CHF",
+"CLP",
+"CNY",
+"COP",
+"CSD",
+"CZK",
+"DKK",
+"EEK",
+"EGP",
+"EUR",
+"FJD",
+"GBP",
+"HKD",
+"HNL",
+"HRK",
+"HUF",
+"IDR",
+"ILS",
+"INR",
+"ISK",
+"JPY",
+"KRW",
+"KWD",
+"KZT",
+"LKR",
+"LTL",
+"MAD",
+"MUR",
+"MXN",
+"MYR",
+"NOK",
+"NPR",
+"NZD",
+"OMR",
+"PEN",
+"PHP",
+"PKR",
+"PLN",
+"QAR",
+"RON",
+"RUB",
+"SAR",
+"SEK",
+"SGD",
+"SIT",
+"SKK",
+"THB",
+"TRY",
+"TTD",
+"TWD",
+"UAH",
+"USD",
+"VEB",
+"ZAR",
+)
 
 class GoolgeCurrencyConverter():
     def url_for(self, currency1, currency2):
@@ -44,12 +113,26 @@ class GoolgeCurrencyConverter():
                 return self.scrape_url_for_response(tree)
  
 if __name__ == "__main__":
+    if((len(sys.argv) == 2) and sys.argv[1] == '-h'):
+        print 'need help?'
+        print "Usage: forex.py USD CNY"
+        print 'Available Currencies:'
+        for currency in CURRENCIES:
+            print currency
+        quit()
+
     if (len(sys.argv) != 3): 
         print "Usage: forex.py USD CNY"
         quit()
 
-    currency1 = sys.argv[1] 
-    currency2 = sys.argv[2]
+    
+    currency1 = sys.argv[1].upper() 
+    currency2 = sys.argv[2].upper()
+    
+    for currency in (currency1,currency2):
+        if (not(currency in CURRENCIES)):
+            print currency + ' is not a valid currency'
+            quit()
 
     c = GoolgeCurrencyConverter()
     result_string = c.convert(currency1, currency2)
