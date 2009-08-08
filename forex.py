@@ -1,93 +1,27 @@
 #!/usr/bin/python
 import warnings,urllib,html5lib,sys
 from html5lib.treebuilders import dom
-from enum import Enum
+import optparse
+from currencies import CURRENCIES
 
-CURRENCIES = Enum(
-"AED",
-"ANG",
-"ARS",
-"AUD",
-"BGN",
-"BHD",
-"BND",
-"BOB",
-"BRL",
-"BWP",
-"CAD",
-"CHF",
-"CLP",
-"CNY",
-"COP",
-"CSD",
-"CZK",
-"DKK",
-"EEK",
-"EGP",
-"EUR",
-"FJD",
-"GBP",
-"HKD",
-"HNL",
-"HRK",
-"HUF",
-"IDR",
-"ILS",
-"INR",
-"ISK",
-"JPY",
-"KRW",
-"KWD",
-"KZT",
-"LKR",
-"LTL",
-"MAD",
-"MUR",
-"MXN",
-"MYR",
-"NOK",
-"NPR",
-"NZD",
-"OMR",
-"PEN",
-"PHP",
-"PKR",
-"PLN",
-"QAR",
-"RON",
-"RUB",
-"SAR",
-"SEK",
-"SGD",
-"SIT",
-"SKK",
-"THB",
-"TRY",
-"TTD",
-"TWD",
-"UAH",
-"USD",
-"VEB",
-"ZAR",
-)
 
-class GoolgeCurrencyConverter():
+class GoogleForexRateClient():
     def url_for(self, currency1, currency2):
         """builds a get request for google's currency converter from the two currencie"""
         url = "http://www.google.com/finance/converter?a=1&from=" + currency1 + "&to=" + currency2
         return url
 
 
-    def get_tree_from(self, html):
+    def build_dom_from(self, html):
         """builds a dom from a html string"""
-        # Create an HTML parser which creates DOMs.
-        parser = html5lib.HTMLParser(tree=dom.TreeBuilder)
-        # Parse the source.
-        tree = parser.parse(html)
-        # Normalise the tree.  This basically cleans up the
-        # text nodes inside which makes our life easier.
-        tree.normalize()
-        return tree
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            parser = html5lib.HTMLParser(tree=dom.TreeBuilder)
+            tree = parser.parse(html)
+            # Normalise the tree.  This basically cleans up the
+            # text nodes inside which makes our life easier.
+            tree.normalize()
+            return tree
 
     def scrape_url_for_response(self,tree):
         # tags with the class of "row")
@@ -96,43 +30,57 @@ class GoolgeCurrencyConverter():
 
         from_currency1 =  rows[0].childNodes[0].data
         to_currency2 = rows[0].childNodes[1].childNodes[0].data
+        #TODO build a currency object that is (CUR,amt)
         return (from_currency1,to_currency2)
 
-    def convert(self, currency1, currency2):
-            """converts one unit of currency1 to currency2"""
-            url = self.url_for(currency1, currency2)
-            response = urllib.urlopen(url)
-            data = response.read()
+    def pull_response_for(self, currency1, currency2):
+        #TODO be able to toggle server for testing
+        url = self.url_for(currency1, currency2)
+        response = urllib.urlopen(url)
+        return response.read()
 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                tree = self.get_tree_from(data)
-                return self.scrape_url_for_response(tree)
+    def get_rate(self, currency1, currency2):
+        """converts one unit of currency1 to currency2"""
+        data = self.pull_response_for(currency1, currency2)
+        tree = self.build_dom_from(data)
+        return self.scrape_url_for_response(tree)
+
+USAGE_MSG = "Usage: forex.py USD CNY"
  
-if __name__ == "__main__":
-    if((len(sys.argv) == 2) and sys.argv[1] == '-h'):
-        print 'need help?'
-        print "Usage: forex.py USD CNY"
-        print 'Available Currencies:'
-        for currency in CURRENCIES:
-            print currency
-        quit()
+def print_and_quit(msg):
+    """prints an output message and ends """
+    print msg
+    quit()
 
-    if (len(sys.argv) != 3): 
-        print "Usage: forex.py USD CNY"
-        quit()
+def show_currencies():
+    print 'need help?'
+    print USAGE_MSG
+    print 'Available Currencies:'
+    print_and_quit(CURRENCIES._keys)
 
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('--currencies', '-c', action="store_true", default=False, 
+                      dest="show_currencies", help="List Valid Currencies")
+
+    options, arguments = parser.parse_args()
+
+    if(options.show_currencies):
+       show_currencies()
+    if (len(arguments) != 2): 
+        print_and_quit(USAGE_MSG)
+    currency1 = arguments[0].upper() 
     
-    currency1 = sys.argv[1].upper() 
-    currency2 = sys.argv[2].upper()
+    currency2 = arguments[1].upper()
     
     for currency in (currency1,currency2):
         if (not(currency in CURRENCIES)):
             print currency + ' is not a valid currency'
             quit()
 
-    c = GoolgeCurrencyConverter()
-    result_string = c.convert(currency1, currency2)
-    print result_string[0]+result_string[1]
+    client = GoogleForexRateClient()
+    rate = client.get_rate(currency1, currency2)
+    print rate[0]+rate[1]
 
-
+if __name__ == "__main__":
+    main()    
