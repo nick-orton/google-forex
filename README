@@ -1,0 +1,10 @@
+google-forex
+------------
+
+a command line client for google's currency converter
+
+dependencies
+------------
+
+[html5lib](http://code.google.com/p/html5lib/)
+[enum](http://pypi.python.org/pypi/enum/)
