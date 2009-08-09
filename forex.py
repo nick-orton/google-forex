@@ -23,21 +23,19 @@ def main():
 
     options, arguments = parser.parse_args()
 
-    if(options.show_currencies):
-       show_currencies()
-    if (len(arguments) != 2): 
-        print_and_quit(USAGE_MSG)
+    if(options.show_currencies): show_currencies()
+    if (len(arguments) != 2): print_and_quit(USAGE_MSG)
     
-    currency1 = arguments[0].upper() 
-    currency2 = arguments[1].upper()
+    base_currency = arguments[0].upper() 
+    quote_currency = arguments[1].upper()
     
-    for currency in (currency1,currency2):
+    for currency in (base_currency,quote_currency):
         if (not(currency in CURRENCIES)):
             print_and_quit(currency + ' is not a valid currency')
 
     client = GoogleForexRateClient()
-    rate = client.get_rate(currency1, currency2)
-    print rate[0]+rate[1]
+    amount = client.get_rate(base_currency, quote_currency)
+    print '1 '+base_currency +' = '+ amount +' '+ quote_currency
 
 if __name__ == "__main__":
     main()    
