@@ -1,5 +1,5 @@
 import warnings, urllib, html5lib
-from html5lib.treebuilders import dom
+from html5lib import treebuilders 
 
 SERVER = "http://www.google.com/finance/converter?"
 AMOUNT_PARAM = "a=1"
@@ -14,18 +14,14 @@ class GoogleForexRateClient():
 
     def _build_dom_from(self, html):
         """builds a dom from a html string"""
-        parser = html5lib.HTMLParser(tree=dom.TreeBuilder)
+        parser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("beautifulsoup"))
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            tree = parser.parse(html)
-        tree.normalize()
-        return tree
+            return parser.parse(html)
 
     def _scrape_url_for_response(self,tree):
         """ Pulls the desired data out of the dom """
-        # TODO nicer scrape [#8]
-        quote = [span for span in tree.getElementsByTagName("span")\
-            if span.getAttribute("class").strip() == "bld"][0].childNodes[0].data
+        quote = tree.span.contents[0]
         amount = quote.split()[0]
         return amount
 
