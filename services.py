@@ -24,9 +24,8 @@ class GoogleForexRateClient():
     def _scrape_url_for_response(self,tree):
         """ Pulls the desired data out of the dom """
         # TODO nicer scrape [#8]
-        meaty_bits = [div for div in tree.getElementsByTagName("div")\
-            if div.getAttribute("id").strip() == "currency_converter_result"][0]
-        quote = meaty_bits.childNodes[1].childNodes[0].data
+        quote = [span for span in tree.getElementsByTagName("span")\
+            if span.getAttribute("class").strip() == "bld"][0].childNodes[0].data
         amount = quote.split()[0]
         return amount
 
